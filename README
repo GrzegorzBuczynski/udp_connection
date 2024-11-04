@@ -1,0 +1,35 @@
+Creating a UDP connection in C involves setting up a socket, preparing the server and client code, and sending and receiving data packets over the socket. Here’s a basic example showing both a UDP server and client.
+
+UDP Server Code (C)
+The server waits for a message from a client and echoes it back.
+
+UDP Client Code (C)
+The client sends a message to the server and waits for a response.
+
+Explanation
+Server Side:
+
+Creates a UDP socket using socket(AF_INET, SOCK_DGRAM, 0).
+Binds the socket to the specified port (PORT) and listens for messages.
+Receives messages from a client and sends the same message back.
+Client Side:
+
+Creates a UDP socket.
+Sends a message to the server using sendto.
+Receives the response from the server using recvfrom.
+Compile and Run
+Compile the server and client programs:
+
+bash
+gcc -o udp_server udp_server.c
+gcc -o udp_client udp_client.c
+
+Start the server:
+bash
+./udp_server
+In a separate terminal, start the client:
+
+bash
+./udp_client
+This setup provides a simple UDP connection where the client can send messages to the server, which echoes them back.
+
