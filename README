@@ -33,3 +33,95 @@ bash
 ./udp_client
 This setup provides a simple UDP connection where the client can send messages to the server, which echoes them back.
 
+
+
+
+To run the UDP client and server within a local network, you simply need to specify the server's IP address in the client code. This way, the client knows where to send its UDP packets.
+
+### Steps to Use the UDP Client and Server in a Local Network
+
+1. **Get the Server's Local IP Address**:
+   - On the machine where the server is running, find the local IP address (not `127.0.0.1`).
+   - For example, on Linux, you can use:
+     ```bash
+     ifconfig
+     ```
+   - Or on Windows:
+     ```cmd
+     ipconfig
+     ```
+   - Look for something like `192.168.x.x` or `10.0.x.x` in the output.
+
+2. **Update the Client Code**:
+   - In the client code, replace `INADDR_ANY` with the actual IP address of the server.
+   - Update the client code's `server_addr` section as shown below:
+
+   ```c
+   server_addr.sin_family = AF_INET;
+   server_addr.sin_port = htons(PORT);
+   server_addr.sin_addr.s_addr = inet_addr("192.168.x.x"); // Replace with your server's IP
+   ```
+
+### Example Client Code with Specific Server IP
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+#define BUFFER_SIZE 1024
+
+int main() {
+    int sockfd;
+    char buffer[BUFFER_SIZE];
+    struct sockaddr_in server_addr;
+    socklen_t addr_len = sizeof(server_addr);
+
+    // Create UDP socket
+    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+        perror("Socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // Fill server information
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = inet_addr("192.168.x.x"); // Replace with your server's IP
+
+    while (1) {
+        // Get user input
+        printf("Enter message: ");
+        fgets(buffer, BUFFER_SIZE, stdin);
+
+        // Send message to server
+        sendto(sockfd, buffer, strlen(buffer), 0, (const struct sockaddr *)&server_addr, addr_len);
+
+        // Receive server response
+        int len = recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&server_addr, &addr_len);
+        buffer[len] = '\0';  // Null-terminate the received data
+        printf("Server: %s\n", buffer);
+    }
+
+    close(sockfd);
+    return 0;
+}
+```
+
+### Running the Server and Client on Different Machines
+
+1. **Start the server** on the first machine:
+   ```bash
+   ./udp_server
+   ```
+
+2. **Run the client** on another machine in the same network:
+   ```bash
+   ./udp_client
+   ```
+
+Now, the client will send UDP packets to the server across the local network, and the server will respond with the echoed message. 
+Just make sure both devices are connected to the same network and there are no firewalls blocking UDP packets on the specified port (e.g., `8080`).
